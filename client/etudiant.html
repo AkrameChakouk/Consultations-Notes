@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Écoléo – Mes notes</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="racine"></div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script>
+    function demarrer() {
+      const contenu = monterCadre("Espace étudiant", "Mes notes");
+      contenu.innerHTML = '<h1>Mes notes de cours</h1><div id="zone">' + htmlAttente() + '</div>';
+      const zone = document.getElementById("zone");
+
+      // Aucun identifiant d'étudiant n'est envoyé : l'API sait qui on est grâce au jeton.
+      appeler("/api/mes-notes")
+        .then(function (reponse) {
+          if (reponse.notes.length === 0) {
+            zone.innerHTML = htmlVide("Aucune note enregistrée");
+            return;
+          }
+          let lignes = "";
+          reponse.notes.forEach(function (note) {
+            lignes += '<tr>' +
+              '<td class="code">' + echapper(note.code) + '</td>' +
+              '<td>' + echapper(note.intitule) + '</td>' +
+              '<td class="' + classeNote(note.valeur) + '">' + formaterNote(note.valeur) + '</td>' +
+              '<td class="gris">' + formaterDate(note.date_saisie) + '</td>' +
+              '</tr>';
+          });
+          zone.innerHTML = '<div class="tableau-cadre"><table>' +
+            '<thead><tr><th>Code</th><th>Matière</th><th>Note</th><th>Date</th></tr></thead>' +
+            '<tbody>' + lignes + '</tbody></table></div>';
+        })
+        .catch(function (erreur) {
+          zone.innerHTML = htmlErreur(erreur);
+        });
+    }
+
+    if (exigerRole("etudiant")) {
+      demarrer();
+    }
+  </script>
+</body>
+</html>
