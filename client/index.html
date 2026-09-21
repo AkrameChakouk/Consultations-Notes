@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Écoléo – Connexion</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="centre">
+    <main class="carte">
+      <div class="entete">
+        <span class="logo logo-grand">É</span>
+        <h1>Écoléo</h1>
+        <p class="sous-titre">Connectez-vous à votre espace</p>
+      </div>
+
+      <div id="message" aria-live="polite"></div>
+
+      <form id="formulaire" novalidate>
+        <label for="login">Identifiant</label>
+        <input id="login" type="text" autocomplete="username" autofocus>
+
+        <label for="mot_de_passe">Mot de passe</label>
+        <div class="champ-mdp">
+          <input id="mot_de_passe" type="password" autocomplete="current-password">
+          <button type="button" id="voir" class="oeil">Afficher</button>
+        </div>
+
+        <button class="bouton" id="envoyer" type="submit">Se connecter</button>
+      </form>
+
+      <p class="lien-bas"><a href="inscription.html">Créer un compte</a></p>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script>
+    // Arriver sur cette page = être déconnecté. On garde seulement un éventuel message (session expirée).
+    const messagePrecedent = sessionStorage.getItem("message_connexion");
+    sessionStorage.clear();
+
+    const zoneMessage = document.getElementById("message");
+    if (messagePrecedent) {
+      zoneMessage.innerHTML = '<div class="bandeau bandeau-info">' + echapper(messagePrecedent) + '</div>';
+    }
+
+    function afficherBandeau(classe, texte) {
+      zoneMessage.innerHTML = '<div class="bandeau ' + classe + '" role="alert">' + echapper(texte) + '</div>';
+    }
+
+    // Bouton « Afficher / Masquer » du mot de passe
+    document.getElementById("voir").addEventListener("click", function () {
+      const champ = document.getElementById("mot_de_passe");
+      const masque = champ.type === "password";
+      champ.type = masque ? "text" : "password";
+      this.textContent = masque ? "Masquer" : "Afficher";
+    });
+
+    document.getElementById("formulaire").addEventListener("submit", async function (evenement) {
+      evenement.preventDefault();
+      const login = document.getElementById("login").value.trim();
+      const motDePasse = document.getElementById("mot_de_passe").value;
+      if (!login || !motDePasse) {
+        afficherBandeau("bandeau-erreur", "Renseignez votre identifiant et votre mot de passe.");
+        return;
+      }
+
+      const bouton = document.getElementById("envoyer");
+      bouton.disabled = true;               // état d'attente
+      bouton.textContent = "Connexion…";
+      zoneMessage.innerHTML = "";
+      try {
+        const reponse = await appeler("/api/connexion", "POST", { login: login, mot_de_passe: motDePasse });
+        ouvrirSession(reponse);
+        location.href = PAGE_DU_ROLE[reponse.role];
+      } catch (erreur) {
+        // 401 : identifiant inconnu ou mot de passe erroné ; 403 : compte en attente de validation
+        const classe = erreur.statut === 403 ? "bandeau-attention" : "bandeau-erreur";
+        afficherBandeau(classe, erreur.message);
+        bouton.disabled = false;
+        bouton.textContent = "Se connecter";
+      }
+    });
+  </script>
+</body>
+</html>
