@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Écoléo – Comptes en attente</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="racine"></div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script>
+    let zoneMessage;
+    let zone;
+
+    // Charge la liste des comptes en attente et l'affiche (attente, erreur, ou liste vide).
+    function charger() {
+      zone.innerHTML = htmlAttente();
+      appeler("/api/comptes-en-attente")
+        .then(function (reponse) {
+          if (reponse.comptes.length === 0) {
+            zone.innerHTML = htmlVide("Aucune demande en attente");
+            return;
+          }
+          let lignes = "";
+          reponse.comptes.forEach(function (compte) {
+            lignes += '<tr>' +
+              '<td class="gris">' + echapper(compte.login) + '</td>' +
+              '<td><strong>' + echapper(compte.prenom + " " + compte.nom) + '</strong></td>' +
+              '<td class="gris">' + echapper(LIBELLE_ROLE[compte.role] || compte.role) + '</td>' +
+              '<td><button class="bouton bouton-petit" type="button" data-id="' + echapper(compte.id_compte) +
+              '" data-login="' + echapper(compte.login) + '">Valider</button></td>' +
+              '</tr>';
+          });
+          zone.innerHTML = '<div class="tableau-cadre"><table>' +
+            '<thead><tr><th>Login</th><th>Nom complet</th><th>Rôle</th><th>Action</th></tr></thead>' +
+            '<tbody>' + lignes + '</tbody></table></div>';
+        })
+        .catch(function (erreur) {
+          zone.innerHTML = htmlErreur(erreur);
+        });
+    }
+
+    function demarrer() {
+      const contenu = monterCadre("Espace superviseur", "Comptes en attente");
+      contenu.innerHTML = '<h1>Comptes en attente</h1><div id="message" aria-live="polite"></div><div id="zone"></div>';
+      zoneMessage = document.getElementById("message");
+      zone = document.getElementById("zone");
+
+      // Un seul écouteur pour tous les boutons « Valider » de la liste.
+      zone.addEventListener("click", function (evenement) {
+        const bouton = evenement.target.closest("button[data-id]");
+        if (!bouton) {
+          return;
+        }
+        bouton.disabled = true;             // état d'attente
+        bouton.textContent = "Validation…";
+        appeler("/api/comptes-en-attente/" + bouton.dataset.id + "/validation", "POST")
+          .then(function () {
+            zoneMessage.innerHTML = '<div class="bandeau bandeau-succes" role="status">Compte « ' +
+              echapper(bouton.dataset.login) + ' » validé.</div>';
+            charger();
+          })
+          .catch(function (erreur) {
+            zoneMessage.innerHTML = '<div class="bandeau bandeau-erreur" role="alert">' +
+              echapper((erreur.statut ? erreur.statut + " : " : "") + erreur.message) + '</div>';
+            bouton.disabled = false;
+            bouton.textContent = "Valider";
+          });
+      });
+
+      charger();
+    }
+
+    if (exigerRole("superviseur")) {
+      demarrer();
+    }
+  </script>
+</body>
+</html>
