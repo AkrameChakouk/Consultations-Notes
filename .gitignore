@@ -1,0 +1,14 @@
+# Environnement virtuel Python et fichiers générés
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Secrets : ne jamais publier
+.env
+
+# Éditeurs / système
+.vscode/
+.idea/
+.DS_Store
+node_modules/
