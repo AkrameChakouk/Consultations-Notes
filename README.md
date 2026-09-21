@@ -23,7 +23,7 @@ Parcours : étudiant E1 → E3 ; enseignant E1 → E4 → E5 ; superviseur E1 �
 |---|---|
 | 1. Analyse | fait |
 | 2. Prototype Figma | fait |
-| 3. Couche données | à faire |
+| 3. Couche données | fait |
 | 4. Couche métier | à faire |
 | 5. Couche présentation | à faire |
 | 6. Intégration et tests | à faire |
