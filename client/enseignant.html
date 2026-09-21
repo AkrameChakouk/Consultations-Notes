@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Écoléo – Mes enseignements</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="racine"></div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script>
+    function demarrer() {
+      const contenu = monterCadre("Espace enseignant", "Mes enseignements");
+      contenu.innerHTML = '<h1>Mes enseignements</h1><div id="zone">' + htmlAttente() + '</div>';
+      const zone = document.getElementById("zone");
+
+      appeler("/api/mes-cours")
+        .then(function (reponse) {
+          if (reponse.cours.length === 0) {
+            zone.innerHTML = htmlVide("Aucun cours assigné");
+            return;
+          }
+          let cartes = "";
+          reponse.cours.forEach(function (cours) {
+            const inscrits = cours.nb_inscrits === 1 ? "1 inscrit" : cours.nb_inscrits + " inscrits";
+            cartes += '<article class="carte-cours">' +
+              '<span class="code">' + echapper(cours.code) + '</span>' +
+              '<h2>' + echapper(cours.intitule) + '</h2>' +
+              '<div class="pied"><span class="gris">' + inscrits + '</span>' +
+              '<a class="bouton bouton-petit" href="cours.html?id=' + encodeURIComponent(cours.id_cours) + '">Notes →</a></div>' +
+              '</article>';
+          });
+          zone.innerHTML = '<div class="cartes">' + cartes + '</div>';
+        })
+        .catch(function (erreur) {
+          zone.innerHTML = htmlErreur(erreur);
+        });
+    }
+
+    if (exigerRole("enseignant")) {
+      demarrer();
+    }
+  </script>
+</body>
+</html>
