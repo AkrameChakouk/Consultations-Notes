@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Écoléo – Notes du cours</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="racine"></div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script>
+    function demarrer() {
+      const contenu = monterCadre("Espace enseignant", "Mes enseignements");
+      contenu.innerHTML = '<a class="retour" href="enseignant.html">← Retour</a>' +
+        '<h1 id="titre">Notes du cours</h1><div id="zone">' + htmlAttente() + '</div>';
+      const zone = document.getElementById("zone");
+
+      // Le numéro du cours vient de l'adresse (cours.html?id=2). L'API vérifie que ce cours est bien le nôtre.
+      const id = new URLSearchParams(location.search).get("id");
+      if (!id || !/^[0-9]+$/.test(id)) {
+        zone.innerHTML = htmlErreur({ statut: 404, message: "Ce cours n'existe pas." });
+        return;
+      }
+
+      appeler("/api/cours/" + id + "/notes")
+        .then(function (reponse) {
+          document.getElementById("titre").textContent = "Notes : " + reponse.cours.code;
+          if (reponse.notes.length === 0) {
+            zone.innerHTML = htmlVide("Aucun étudiant inscrit");
+            return;
+          }
+          let lignes = "";
+          reponse.notes.forEach(function (note) {
+            lignes += '<tr>' +
+              '<td class="gris">' + echapper(note.id_etudiant) + '</td>' +
+              '<td>' + echapper(note.prenom + " " + note.nom) + '</td>' +
+              '<td class="' + classeNote(note.valeur) + '">' + formaterNote(note.valeur) + '</td>' +
+              '</tr>';
+          });
+          zone.innerHTML = '<p class="gris">' + echapper(reponse.cours.intitule) + '</p>' +
+            '<div class="tableau-cadre"><table>' +
+            '<thead><tr><th>N° étudiant</th><th>Nom</th><th>Note</th></tr></thead>' +
+            '<tbody>' + lignes + '</tbody></table></div>';
+        })
+        .catch(function (erreur) {
+          zone.innerHTML = htmlErreur(erreur);   // ex. 403 : ce cours est celui d'un autre enseignant ; 404 : cours inexistant
+        });
+    }
+
+    if (exigerRole("enseignant")) {
+      demarrer();
+    }
+  </script>
+</body>
+</html>
