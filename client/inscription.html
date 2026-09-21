@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Écoléo – Demande de compte</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="centre">
+    <main class="carte">
+      <div class="entete">
+        <h1>Demande de compte</h1>
+        <p class="sous-titre">Créez vos accès pour accéder à vos services académiques</p>
+      </div>
+
+      <div id="message" aria-live="polite"></div>
+
+      <form id="formulaire" novalidate>
+        <div class="deux-colonnes">
+          <div>
+            <label for="nom">Nom</label>
+            <input id="nom" type="text" autocomplete="family-name">
+          </div>
+          <div>
+            <label for="prenom">Prénom</label>
+            <input id="prenom" type="text" autocomplete="given-name">
+          </div>
+        </div>
+
+        <label for="email">E-mail</label>
+        <input id="email" type="email" autocomplete="email">
+
+        <label for="login">Login</label>
+        <input id="login" type="text" autocomplete="username">
+
+        <label for="mot_de_passe">Mot de passe (8 caractères minimum)</label>
+        <div class="champ-mdp">
+          <input id="mot_de_passe" type="password" autocomplete="new-password">
+          <button type="button" id="voir" class="oeil">Afficher</button>
+        </div>
+
+        <label>Rôle</label>
+        <div class="roles">
+          <label><input type="radio" name="role" value="etudiant" checked> Étudiant</label>
+          <label><input type="radio" name="role" value="enseignant"> Enseignant</label>
+        </div>
+
+        <button class="bouton" id="envoyer" type="submit">Envoyer la demande</button>
+      </form>
+
+      <p class="lien-bas"><a href="index.html">Retour à la connexion</a></p>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script>
+    const zoneMessage = document.getElementById("message");
+
+    function afficherBandeau(classe, texte) {
+      zoneMessage.innerHTML = '<div class="bandeau ' + classe + '" role="alert">' + echapper(texte) + '</div>';
+    }
+
+    document.getElementById("voir").addEventListener("click", function () {
+      const champ = document.getElementById("mot_de_passe");
+      const masque = champ.type === "password";
+      champ.type = masque ? "text" : "password";
+      this.textContent = masque ? "Masquer" : "Afficher";
+    });
+
+    document.getElementById("formulaire").addEventListener("submit", async function (evenement) {
+      evenement.preventDefault();
+      const donnees = {
+        nom: document.getElementById("nom").value.trim(),
+        prenom: document.getElementById("prenom").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        login: document.getElementById("login").value.trim(),
+        mot_de_passe: document.getElementById("mot_de_passe").value,
+        role: document.querySelector('input[name="role"]:checked').value
+      };
+
+      // Vérifications simples côté client (l'API refait les mêmes contrôles : c'est elle qui décide).
+      if (!donnees.nom || !donnees.prenom || !donnees.email || !donnees.login || !donnees.mot_de_passe) {
+        afficherBandeau("bandeau-erreur", "Tous les champs sont obligatoires.");
+        return;
+      }
+      if (donnees.mot_de_passe.length < 8) {
+        afficherBandeau("bandeau-erreur", "Le mot de passe doit faire au moins 8 caractères.");
+        return;
+      }
+
+      const bouton = document.getElementById("envoyer");
+      bouton.disabled = true;               // état d'attente
+      bouton.textContent = "Envoi…";
+      zoneMessage.innerHTML = "";
+      try {
+        const reponse = await appeler("/api/inscription", "POST", donnees);
+        afficherBandeau("bandeau-succes", reponse.message);
+        document.getElementById("formulaire").reset();
+      } catch (erreur) {
+        afficherBandeau("bandeau-erreur", erreur.message);   // ex. 409 : login ou e-mail déjà utilisé
+      }
+      bouton.disabled = false;
+      bouton.textContent = "Envoyer la demande";
+    });
+  </script>
+</body>
+</html>
