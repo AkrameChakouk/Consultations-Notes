@@ -1,7 +1,7 @@
 # Consultations-Notes
 # Consultation de notes — application trois-tiers
 
-DEV 1 — Année 2025–2026 — Binôme : Nom 1 · Nom 2
+DEV 1 — Année 2025–2026 — Binôme : Akrame · Clement
 
 Application web de consultation de notes en trois couches séparées (présentation, métier en Python, base de données relationnelle), prototypée sous Figma.
 
