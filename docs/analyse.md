@@ -45,11 +45,11 @@ Tous ces cas sont dessinés dans le prototype Figma.
 |---|---|---|
 | R1 | Un cours est animé par un seul enseignant | Clé étrangère obligatoire dans COURS |
 | R2 | Un enseignant peut animer plusieurs cours | Cardinalité (1,n) côté ENSEIGNANT |
-| R3 | Plusieurs étudiants suivent un même cours | Association plusieurs-à-plusieurs (inscription) |
+| R3 | Plusieurs étudiants suivent un même cours | Association plusieurs-à-plusieurs (table NOTE) |
 | R4 | Un étudiant a au plus une note par cours | Clé primaire composée (étudiant, cours) dans NOTE |
 | R5 | Un compte correspond à une seule personne | Contrainte d'unicité sur le login |
 | R6 | Un compte non validé ne peut pas se connecter | Attribut de statut, vérifié à l'authentification |
 
 ## 5. Données
 
-COMPTE (login unique, empreinte du mot de passe, rôle, statut), ENSEIGNANT, ÉTUDIANT, COURS, INSCRIPTION, NOTE. Le mot de passe est stocké sous forme d'empreinte (bcrypt), jamais en clair.
+COMPTE (login unique, empreinte du mot de passe, rôle, statut), ENSEIGNANT, ÉTUDIANT, COURS, NOTE. Le mot de passe est stocké sous forme d'empreinte (bcrypt), jamais en clair.
