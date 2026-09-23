@@ -16,6 +16,8 @@ Parcours : étudiant E1 → E3 ; enseignant E1 → E4 → E5 ; superviseur E1 �
 ## Documentation
 
 - [Dossier d'analyse](docs/analyse.md)
+- [Tableau de tests d'intégration (étape 6)](docs/tests.md)
+- [Procédure d'installation sur machine vierge](docs/installation.md)
 
 ## Avancement
 
@@ -25,8 +27,8 @@ Parcours : étudiant E1 → E3 ; enseignant E1 → E4 → E5 ; superviseur E1 �
 | 2. Prototype Figma | fait |
 | 3. Couche données | fait |
 | 4. Couche métier | fait |
-| 5. Couche présentation | fait (captures à ajouter dans `docs/`) |
-| 6. Intégration et tests | à faire |
+| 5. Couche présentation | fait |
+| 6. Intégration et tests | fait (captures à ajouter dans `docs/captures/`) |
 
 ## Lancer la couche métier (étape 4)
 
@@ -37,9 +39,9 @@ cd metier
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env          # puis adapter les valeurs si besoin
+cp .env.example .env # puis adapter les valeurs si besoin
 set -a; source .env; set +a
-python -m app.main             # l'API écoute sur http://127.0.0.1:5000
+python -m app.main # l'API écoute sur http://127.0.0.1:5000
 ```
 
 Dans un second terminal (base peuplée et API lancée) : `bash exemples_requetes.sh` rejoue les requêtes curl des six routes et affiche le code HTTP de chacune.
@@ -57,9 +59,13 @@ python3 -m http.server 8080
 
 Puis ouvrir http://localhost:8080 dans le navigateur. Comptes de démonstration (mot de passe `motdepasse123`) : `lmartin` (étudiant), `sbenali` (enseignant), `admin` (superviseur).
 
+## Tests et installation (étape 6)
+
+Le tableau de tests ([`docs/tests.md`](docs/tests.md)) couvre les 25 requêtes de l'API, les parcours du client dans le navigateur, et le test demandé par le sujet vérifiant qu'un étudiant ne peut pas voir les notes d'un autre. La procédure d'installation sur une machine vierge ([`docs/installation.md`](docs/installation.md)) a été suivie et vérifiée sur une machine n'ayant rien d'installé pour ce projet.
+
 ## Organisation prévue du dépôt
 
 - `client/` : couche présentation
 - `metier/` : couche métier (Python)
 - `donnees/` : scripts SQL
-- `docs/` : analyse et prototype
+- `docs/` : analyse, prototype, tests et procédure d'installation
